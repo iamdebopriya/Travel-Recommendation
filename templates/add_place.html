@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add a Place</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: palevioletred;
+            background-size: cover;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+            padding: 20px;
+            border-radius: 10px;
+        }
+        h1 {
+            color: #ff6f61;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #ff6f61;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #e55b53;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Add a New Place</h1>
+        
+        <form method="post" action="/add_place">
+            <input type="text" name="name" placeholder="Place Name" required>
+            <input type="text" name="city" placeholder="City" required>
+            <input type="text" name="zone" placeholder="Zone" required>
+            <input type="text" name="state" placeholder="State" required>
+            <input type="text" name="type" placeholder="Type (e.g., Historical, Natural, etc.)" required>
+            <input type="number" name="establishment_year" placeholder="Establishment Year" required>
+            <input type="text" name="time_needed" placeholder="time needed to visit in hrs" required>
+            <input type="number" step="0.1" name="google_review_rating" placeholder="Google review rating" required>
+            <input type="number" name="entrance_fee" placeholder="Entrance Fee in INR" required>
+            <input type="text" name="weekly_off" placeholder="Weekly Off" required>
+            <input type="text" name="significance" placeholder="Significance" required>
+            <input type="text" name="dslr_allowed" placeholder="DSLR Allowed (Yes/No)" required>
+            <input type="number" name="google_reviews" placeholder="Number of Google Reviews (in lakhs)" required>
+            <input type="text" name="best_time_to_visit" placeholder="Best Time to Visit" required>
+            <button type="submit">Add Place</button>
+        </form>
+    </div>
+</body>
+</html>
