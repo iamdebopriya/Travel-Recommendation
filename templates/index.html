@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Recommendation App</title>
+    <style>
+        body {
+            font-family: Verdana;
+            background-color: #f7a4a0;
+            background-size: cover;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+            padding: 20px;
+            border-radius: 10px;
+        }
+        h1 {
+            color: #300856;
+        }
+        select, input, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #ff6f61;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #e55b53;
+        }
+        .result-item, .selected-item {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 10px;
+        }
+        .result-item h3, .selected-item h3 {
+            margin: 0;
+            color: #ff6f61;
+        }
+        .result-item p, .selected-item p {
+            margin: 5px 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Travel Recommendation App</h1>
+        
+        <form method="post" action="/">
+            <input type="text" id="place-search" placeholder="Start typing to filter places..." onkeyup="filterPlaces()" />
+
+            <select name="place_name" id="place-dropdown" required>
+                <option value="" disabled selected>Select a place</option>
+                {% for place in place_names %}
+                    <option value="{{ place }}">{{ place }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Get Recommendations</button>
+        </form>
+
+        {% if selected_place_details %}
+            <h2>Selected Place</h2>
+            <div class="selected-item">
+                <h3>{{ selected_place_details['Name'] }}</h3>
+                <!-- Details of the selected place -->
+                <p><strong>Type:</strong> {{ selected_place_details['Type'] }}</p>
+                <p><strong>Location:</strong> {{ selected_place_details['City'] }}, {{ selected_place_details['State'] }}, {{ selected_place_details['Zone'] }}</p>
+                <p><strong>Establishment Year:</strong> {{ selected_place_details['Establishment Year'] }}</p>
+                <p><strong>Time Needed to Visit:</strong> {{ selected_place_details['Time Needed to Visit in hrs'] }} hours</p>
+                <p><strong>Google Review Rating:</strong> {{ selected_place_details['Google Review Rating'] }}</p>
+                <p><strong>Entrance Fee:</strong> ₹{{ selected_place_details['Entrance Fee in INR'] }}</p>
+                <p><strong>Weekly Off:</strong> {{ selected_place_details['Weekly Off'] }}</p>
+                <p><strong>Significance:</strong> {{ selected_place_details['Significance'] }}</p>
+                <p><strong>DSLR Allowed:</strong> {{ selected_place_details['DSLR Allowed'] }}</p>
+                <p><strong>Number of Google Reviews:</strong> {{ selected_place_details['Number of google review in lakhs'] }} lakhs</p>
+                <p><strong>Best Time to Visit:</strong> {{ selected_place_details['Best Time to visit'] }}</p>
+            </div>
+        {% endif %}
+        
+        {% if recommendations %}
+            <h2>Recommended Places</h2>
+            {% for place in recommendations %}
+                <div class="result-item">
+                    <h3>{{ place['Name'] }}</h3>
+                    <p><strong>Type:</strong> {{ place['Type'] }}</p>
+                    <p><strong>Location:</strong> {{ place['City'] }}, {{ place['State'] }}, {{ place['Zone'] }}</p>
+                    <p><strong>Establishment Year:</strong> {{ place['Establishment Year'] }}</p>
+                    <p><strong>Time Needed to Visit:</strong> {{ place['Time Needed to Visit in hrs'] }} hours</p>
+                    <p><strong>Google Review Rating:</strong> {{ place['Google Review Rating'] }}</p>
+                    <p><strong>Entrance Fee:</strong> ₹{{ place['Entrance Fee in INR'] }}</p>
+                    <p><strong>Weekly Off:</strong> {{ place['Weekly Off'] }}</p>
+                    <p><strong>Significance:</strong> {{ place['Significance'] }}</p>
+                    <p><strong>DSLR Allowed:</strong> {{ place['DSLR Allowed'] }}</p>
+                    <p><strong>Number of Google Reviews:</strong> {{ place['Number of google review in lakhs'] }} lakhs</p>
+                    <p><strong>Best Time to Visit:</strong> {{ place['Best Time to visit'] }}</p>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <script>
+        function filterPlaces() {
+            var input, filter, select, options, i;
+            input = document.getElementById("place-search");
+            filter = input.value.toUpperCase();
+            select = document.getElementById("place-dropdown");
+            options = select.getElementsByTagName("option");
+
+            for (i = 0; i < options.length; i++) {
+                txtValue = options[i].text || options[i].innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    options[i].style.display = "";
+                } else {
+                    options[i].style.display = "none";
+                }
+            }
+        }
+    </script>
+</body>
+</html>
