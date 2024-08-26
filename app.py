@@ -1,100 +1,84 @@
-
-from flask import Flask, render_template, request, redirect
-import pandas as pd
+from flask import Flask, render_template, request, redirect, url_for
+from config import Config
+from model import db, Place
 
 app = Flask(__name__)
+app.config.from_object(Config)
+db.init_app(app)
 
-# Function to load dataset
-def load_data():
-    return pd.read_csv('Top Indian Places to Visit.csv')
-
-# Load the dataset
-df = load_data()
-
-# Function to get all place names
-def get_place_names():
-    return df['Name'].tolist()
+@app.before_first_request
+def create_tables():
+    with app.app_context():
+        db.create_all()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    global df
     recommendations = []
     selected_place_details = {}
 
     if request.method == 'POST':
         selected_place = request.form.get('place_name')
+        place_info = Place.query.filter_by(name=selected_place).first()
 
-        if selected_place:
-            # Get the selected place details
-            place_info = df[df['Name'] == selected_place].iloc[0]
-            selected_city = place_info['City']
-            selected_zone = place_info['Zone']
-            selected_state = place_info['State']
+        if place_info:
+            selected_city = place_info.city
+            selected_zone = place_info.zone
+            selected_state = place_info.state
 
-            # Save the selected place details to display it alongside recommendations
             selected_place_details = place_info.to_dict()
 
-            # First, recommend places in the same state, city, and zone
-            recommendations = df[(df['State'] == selected_state) & 
-                                 (df['City'] == selected_city) & 
-                                 (df['Zone'] == selected_zone) & 
-                                 (df['Name'] != selected_place)]
-            
-            # If no results, recommend places in the same state and city (ignore zone)
-            if recommendations.empty:
-                recommendations = df[(df['State'] == selected_state) & 
-                                     (df['City'] == selected_city) & 
-                                     (df['Name'] != selected_place)]
-            
-            # If still no results, recommend places in the same state and zone (ignore city)
-            if recommendations.empty:
-                recommendations = df[(df['State'] == selected_state) & 
-                                     (df['Zone'] == selected_zone) & 
-                                     (df['Name'] != selected_place)]
-            
-            # If still no results, recommend places in the same state (ignore city and zone)
-            if recommendations.empty:
-                recommendations = df[df['State'] == selected_state & (df['Name'] != selected_place)]
-            
-            # Convert recommendations to a dictionary for rendering
-            recommendations = recommendations.to_dict(orient='records')
+            recommendations = Place.query.filter(
+                (Place.state == selected_state) & 
+                (Place.city == selected_city) & 
+                (Place.zone == selected_zone) & 
+                (Place.name != selected_place)
+            ).all()
 
-    return render_template('index.html', place_names=get_place_names(), selected_place_details=selected_place_details, recommendations=recommendations)
+            if not recommendations:
+                recommendations = Place.query.filter(
+                    (Place.state == selected_state) & 
+                    (Place.city == selected_city) & 
+                    (Place.name != selected_place)
+                ).all()
 
-@app.route('/add_place_form', methods=['GET'])
-def add_place_form():
-    return render_template('add_place.html')
+            if not recommendations:
+                recommendations = Place.query.filter(
+                    (Place.state == selected_state) & 
+                    (Place.zone == selected_zone) & 
+                    (Place.name != selected_place)
+                ).all()
 
-@app.route('/add_place', methods=['POST'])
+            recommendations = [place.to_dict() for place in recommendations]
+
+    place_names = [place.name for place in Place.query.all()]
+    return render_template('index.html', place_names=place_names, selected_place_details=selected_place_details, recommendations=recommendations)
+
+@app.route('/add_place', methods=['GET', 'POST'])
 def add_place():
-    global df
-    new_place = {
-        'Name': request.form['name'],
-        'City': request.form['city'],
-        'Zone': request.form['zone'],
-        'State': request.form['state'],
-        'Type': request.form['type'],
-        'Establishment Year': int(request.form['establishment_year']),
-        'time needed to visit in hrs': (request.form['time_needed']),
-        'Google review rating': float(request.form['google_review_rating']),
-        'Entrance Fee in INR': int(request.form['entrance_fee']),
-        'Weekly Off': request.form['weekly_off'],
-        'Significance': request.form['significance'],
-        'DSLR Allowed': request.form['dslr_allowed'],
-        'Number of google review in lakhs': float(request.form['google_reviews']),
-        'Best Time to visit': request.form['best_time_to_visit']
-    }
-    
-    # Convert new place dictionary to DataFrame
-    new_place_df = pd.DataFrame([new_place])
-    
-    # Concatenate the new place DataFrame with the existing DataFrame
-    df = pd.concat([df, new_place_df], ignore_index=True)
-    
-    # Save the updated DataFrame to CSV
-    df.to_csv('Top Indian Places to Visit.csv', index=False)
+    if request.method == 'POST':
+        new_place = Place(
+            name=request.form.get('name'),
+            city=request.form.get('city'),
+            zone=request.form.get('zone'),
+            state=request.form.get('state'),
+            type=request.form.get('type'),
+            establishment_year=request.form.get('establishment_year'),
+            time_needed_to_visit=request.form.get('time_needed_to_visit'),
+            google_review_rating=request.form.get('google_review_rating'),
+            entrance_fee=request.form.get('entrance_fee'),
+            weekly_off=request.form.get('weekly_off'),
+            significance=request.form.get('significance'),
+            dslr_allowed=request.form.get('dslr_allowed'),
+            number_of_google_reviews=request.form.get('number_of_google_reviews'),
+            best_time_to_visit=request.form.get('best_time_to_visit')
+        )
+        
+        db.session.add(new_place)
+        db.session.commit()
+        
+        return redirect(url_for('index'))
 
-    return redirect('/')
+    return render_template('add_place.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
