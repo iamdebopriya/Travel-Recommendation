@@ -1,5 +1,6 @@
 
 
+
 from flask import Flask, render_template, request, redirect
 import pandas as pd
 
@@ -62,40 +63,6 @@ def index():
 
     return render_template('index.html', place_names=get_place_names(), selected_place_details=selected_place_details, recommendations=recommendations)
 
-@app.route('/add_place_form', methods=['GET'])
-def add_place_form():
-    return render_template('add_place.html')
-
-@app.route('/add_place', methods=['POST'])
-def add_place():
-    global df
-    new_place = {
-        'Name': request.form['name'],
-        'City': request.form['city'],
-        'Zone': request.form['zone'],
-        'State': request.form['state'],
-        'Type': request.form['type'],
-        'Establishment Year': int(request.form['establishment_year']),
-        'time needed to visit in hrs': (request.form['time_needed']),
-        'Google review rating': float(request.form['google_review_rating']),
-        'Entrance Fee in INR': int(request.form['entrance_fee']),
-        'Weekly Off': request.form['weekly_off'],
-        'Significance': request.form['significance'],
-        'DSLR Allowed': request.form['dslr_allowed'],
-        'Number of google review in lakhs': float(request.form['google_reviews']),
-        'Best Time to visit': request.form['best_time_to_visit']
-    }
-    
-    # Convert new place dictionary to DataFrame
-    new_place_df = pd.DataFrame([new_place])
-    
-    # Concatenate the new place DataFrame with the existing DataFrame
-    df = pd.concat([df, new_place_df], ignore_index=True)
-    
-    # Save the updated DataFrame to CSV
-    df.to_csv('Top Indian Places to Visit.csv', index=False)
-
-    return redirect('/')
 
 if __name__ == '__main__':
     app.run(debug=True)
